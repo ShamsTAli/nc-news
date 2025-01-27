@@ -1,6 +1,9 @@
 const express = require("express");
 const { getEndpoints, getTopics } = require("../controllers/api.controller");
-const { getArticleByID } = require("../controllers/articles.controller");
+const {
+  getArticleByID,
+  getArticles,
+} = require("../controllers/articles.controller");
 const app = express();
 
 // Reminder to add express.us to access response body
@@ -9,9 +12,9 @@ const app = express();
 app.get("/api", getEndpoints);
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleByID);
+app.get("/api/articles", getArticles);
 
 // Error Handling
-
 // Custom 404
 app.all("*", (request, response) => {
   response.status(404).send({ error: "Endpoint not found" });
@@ -28,7 +31,7 @@ app.use((err, request, response, next) => {
 
 app.use((err, request, response, next) => {
   if (err.msg === "article does not exist") {
-    response.status(404).send({msg: "Not Found"});
+    response.status(404).send({ msg: "Not Found" });
   } else {
     next(err);
   }

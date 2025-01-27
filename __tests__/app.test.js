@@ -87,3 +87,35 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 });
+
+describe("GET /api/articles", () => {
+  test("GET 200: Responds with all articles", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(13);
+      });
+  });
+  test("GET 200: Responds with comment count as an additional property", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element).toHaveProperty("comment_count");
+        });
+      });
+  });
+  test("GET 200: Responds with articles in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", {
+          descending: "true",
+          coerce: true,
+        });
+      });
+  });
+});
