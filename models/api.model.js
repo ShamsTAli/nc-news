@@ -1,4 +1,5 @@
 const fs = require("fs/promises");
+const db = require(`${__dirname}/../db/connection.js`);
 
 async function fetchEndpoints() {
   try {
@@ -9,6 +10,20 @@ async function fetchEndpoints() {
   }
 }
 
+async function selectTopics() {
+  try {
+    const allTopics = await db.query("SELECT * FROM topics");
+    if (typeof allTopics === "undefined") {
+      return Promise.reject({ msg: "Not Found" });
+    } else {
+      return allTopics.rows;
+    }
+  } catch (err) {
+    return err;
+  }
+}
+
 module.exports = {
   fetchEndpoints,
+  selectTopics,
 };
