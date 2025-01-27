@@ -46,8 +46,14 @@ describe("GET /api/topics", () => {
   });
 });
 
-// describe("",()=>{
-//   test("",()=>{
-
-//   })
-// })
+describe.skip("GET /api/articles/:article_id", () => {
+  test("GET 200: Responds with a single article", () => {
+    return request(app).get("/api/articles/1").send(200);
+  });
+  test("GET 400: Responds with an appropriate err message when provided an invalid request", () => {
+    return request(app).get("/api/articles/name-of-article").send(400);
+  });
+  test("GET 404: Responds with an appropriate err message when ID does not exist", () => {
+    return request(app).get("/api/articles/99").send(404);
+  });
+});

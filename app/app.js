@@ -7,6 +7,7 @@ const app = express();
 // Get Requests
 app.get("/api", getEndpoints);
 app.get("/api/topics", getTopics);
+// app.get("/api/articles/:article_id",___)
 
 // Error Handling
 // Error 400
@@ -21,6 +22,10 @@ app.get("/api/topics", getTopics);
 
 // Default 500 response
 app.use((err, request, response, next) => {
+  console.log(err);
+  console.log(request);
+  console.log(response);
+  console.log(next);
   response
     .status(500)
     .send({ msg: "Sorry bud, internal server error, have a good day" });
