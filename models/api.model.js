@@ -13,11 +13,7 @@ async function fetchEndpoints() {
 async function selectTopics() {
   try {
     const allTopics = await db.query("SELECT * FROM topics");
-    if (typeof allTopics === "undefined") {
-      return Promise.reject({ msg: "Not Found" });
-    } else {
-      return allTopics.rows;
-    }
+    return allTopics.rows;
   } catch (err) {
     return err;
   }
