@@ -3,6 +3,7 @@ const { getEndpoints, getTopics } = require("../controllers/api.controller");
 const {
   getArticleByID,
   getArticles,
+  getArticleComments,
 } = require("../controllers/articles.controller");
 const app = express();
 
@@ -13,6 +14,7 @@ app.get("/api", getEndpoints);
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles", getArticles);
+app.get("/api/articles/:article_id/comments", getArticleComments);
 
 // Error Handling
 // Custom 404
@@ -30,7 +32,7 @@ app.use((err, request, response, next) => {
 });
 
 app.use((err, request, response, next) => {
-  if (err.msg === "article does not exist") {
+  if (err.msg && err.status) {
     response.status(404).send({ msg: "Not Found" });
   } else {
     next(err);
