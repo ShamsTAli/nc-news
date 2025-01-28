@@ -4,10 +4,10 @@ const {
   getArticleByID,
   getArticles,
   getArticleComments,
+  postArticleComment,
 } = require("../controllers/articles.controller");
 const app = express();
-
-// Reminder to add express.us to access response body
+app.use(express.json());
 
 // Get Requests
 app.get("/api", getEndpoints);
@@ -15,6 +15,9 @@ app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id/comments", getArticleComments);
+
+//Post Requests
+app.post("/api/articles/:article_id/comments", postArticleComment);
 
 // Error Handling
 // Custom 404
@@ -24,7 +27,7 @@ app.all("*", (request, response) => {
 
 // Error 400
 app.use((err, request, response, next) => {
-  if (err.code === "22P02") {
+  if (err.code === "22P02" || err.msg === "Bad Request") {
     response.status(400).send({ msg: "Bad Request" });
   } else {
     next(err);
