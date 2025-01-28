@@ -352,7 +352,6 @@ describe("GET /api/users", () => {
       .get("/api/users")
       .expect(200)
       .then(({ body }) => {
-        console.log(body);
         expect(Array.isArray(body.users)).toBe(true);
         expect(body.users.length).toBe(4);
         body.users.forEach((element) => {
