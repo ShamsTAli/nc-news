@@ -1,4 +1,5 @@
 const { checkArticleHasComments } = require("../util/checkArticleComment");
+const { checkIfExists, checkArticleExists } = require("../util/checkIfExists");
 
 const db = require(`${__dirname}/../db/connection.js`);
 
@@ -64,5 +65,20 @@ exports.fetchArticleComments = (article_id) => {
     return db.query(inputQuery, [article_id]).then(({ rows }) => {
       return rows;
     });
+  });
+};
+
+exports.insertComment = (username, body, article_id) => {
+  return checkIfExists(username, body).then(() => {
+    return checkArticleExists(article_id)
+      .then(() => {
+        return db.query(
+          "INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *",
+          [username, body, article_id]
+        );
+      })
+      .then(({ rows }) => {
+        return rows[0];
+      });
   });
 };

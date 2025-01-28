@@ -83,8 +83,6 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/99")
       .expect(404)
       .then(({ body }) => {
-        console.log(body);
-        console.log(body.msg);
         expect(body.msg).toBe("Not Found");
       });
   });
@@ -171,6 +169,67 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("POST:201 Responds with post object on successful post request", () => {
+    const postComment = {
+      username: "icellusedkars",
+      body: "This article is very informative...",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(postComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.msg).toMatchObject({
+          article_id: 2,
+          author: "icellusedkars",
+          body: "This article is very informative...",
+          comment_id: expect.any(Number),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+        });
+      });
+  });
+  test("POST:404 Responds with not found if article_id does not exist", () => {
+    const postComment = {
+      username: "shamscript",
+      body: "This article is very informative...",
+    };
+    return request(app)
+      .post("/api/articles/200/comments")
+      .send(postComment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toEqual("Not Found");
+      });
+  });
+  test("POST:400 Responds with err and msg if post is missing data", () => {
+    const postComment = {
+      username: "shamscript",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(postComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("POST:400 Responds with err and msg if post post includes incorrect keys", () => {
+    const postComment = {
+      username: "shamscript",
+      votes: "This article is very informative...",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(postComment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
       });
   });
 });
