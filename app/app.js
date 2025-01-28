@@ -5,6 +5,7 @@ const {
   getArticles,
   getArticleComments,
   postArticleComment,
+  patchArticleVote,
 } = require("../controllers/articles.controller");
 const app = express();
 app.use(express.json());
@@ -16,8 +17,9 @@ app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id/comments", getArticleComments);
 
-//Post Requests
+//Post & Patch Requests
 app.post("/api/articles/:article_id/comments", postArticleComment);
+app.patch("/api/articles/:article_id", patchArticleVote);
 
 // Error Handling
 // Custom 404

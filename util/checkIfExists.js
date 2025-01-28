@@ -32,3 +32,14 @@ exports.checkArticleExists = (article_id) =>{
     })
   }
 }
+
+exports.checkValidDataType = (inc_votes)=>{
+  if (inc_votes === NaN){
+    return Promise.reject({
+      status: 400,
+      msg: "Bad Request",
+    })
+  } else {
+    return Promise.resolve()
+  }
+}
