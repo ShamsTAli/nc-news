@@ -3,6 +3,7 @@ const {
   fetchAllArticles,
   fetchArticleComments,
   insertComment,
+  updateVotes,
 } = require("../models/articles.models");
 
 exports.getArticleByID = (request, response, next) => {
@@ -48,3 +49,16 @@ exports.postArticleComment = (request, response, next) => {
       next(err);
     });
 };
+
+exports.patchArticleVote = (request, response, next) =>{
+  const {article_id} = request.params
+  const {inc_votes} = request.body
+  updateVotes(article_id, inc_votes)
+  .then((article)=>{
+    response.status(200).send({article})
+  })
+  .catch((err)=>{
+    next(err)
+  })
+
+}
