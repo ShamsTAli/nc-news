@@ -323,3 +323,25 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 });
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("DELETE 204: Deletes item and no response sent back", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("DELETE 404: Comment not found if non-existent comment_id", () => {
+    return request(app)
+      .delete("/api/comments/100")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("DELETE 400: Bad request if invalid data", () => {
+    return request(app)
+      .delete("/api/comments/negativecomment")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
