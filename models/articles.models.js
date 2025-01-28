@@ -1,3 +1,5 @@
+const { checkArticleHasComments } = require("../util/checkArticleComment");
+
 const db = require(`${__dirname}/../db/connection.js`);
 
 exports.fetchArticleByID = (article_id) => {
@@ -5,7 +7,10 @@ exports.fetchArticleByID = (article_id) => {
     .query("SELECT * FROM articles WHERE article_id = $1", [article_id])
     .then((result) => {
       if (result.rows.length === 0) {
-        return Promise.reject({ msg: "article does not exist" });
+        return Promise.reject({
+          status: 404,
+          msg: "Not Found",
+        });
       } else {
         return result.rows[0];
       }
@@ -36,5 +41,28 @@ ORDER BY
 `;
   return db.query(inputQuery).then((result) => {
     return result.rows;
+  });
+};
+
+exports.fetchArticleComments = (article_id) => {
+  return checkArticleHasComments(article_id).then(() => {
+    const inputQuery = `
+       SELECT
+      c.article_id,
+      c.votes,
+      c.created_at,
+      c.author,
+      c.body,
+      c.comment_id
+    FROM
+      comments c
+    WHERE
+      c.article_id = $1
+    ORDER BY
+      c.created_at DESC
+    `;
+    return db.query(inputQuery, [article_id]).then(({ rows }) => {
+      return rows;
+    });
   });
 };

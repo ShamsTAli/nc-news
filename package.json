@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "setup-dbs": "psql -f ./db/setup.sql",
+    "preview": "psql -f ./db/data/test-data/preview.sql > preview.md",
     "seed": "node ./db/seeds/run-seed.js",
     "seed-test": "NODE_ENV=test node ./db/seeds/run-seed.js",
     "seed-dev": "NODE_ENV=development node ./db/seeds/run-seed.js",
