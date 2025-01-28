@@ -7,6 +7,7 @@ const {
   postArticleComment,
   patchArticleVote,
 } = require("../controllers/articles.controller");
+const { deleteComment } = require("../controllers/comments.controller");
 const app = express();
 app.use(express.json());
 
@@ -17,9 +18,11 @@ app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id/comments", getArticleComments);
 
-//Post & Patch Requests
+//Post & Patch & Delete Requests
 app.post("/api/articles/:article_id/comments", postArticleComment);
 app.patch("/api/articles/:article_id", patchArticleVote);
+app.delete("/api/comments/:comment_id", deleteComment)
+
 
 // Error Handling
 // Custom 404
