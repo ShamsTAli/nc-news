@@ -345,3 +345,41 @@ describe("DELETE /api/comments/:comment_id", () => {
       });
   });
 });
+
+describe("GET /api/users", () => {
+  test("GET 200: Responds with all users in an array of objects with correct properties", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.users)).toBe(true);
+        expect(body.users.length).toBe(4);
+        body.users.forEach((element) => {
+          expect(element).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+  });
+  // Tried to simulate an empty database but couldn't get it to work
+  // test("GET 200: Responds with empty array if the request is successful however there are no users", () => {
+  //   return db.query("DELETE FROM users").then(() => {
+  //     return request(app)
+  //       .get("/api/users")
+  //       .expect(200)
+  //       .then(({ body }) => {
+  //         expect(body.users).toEqual([]);
+  //       });
+  //   });
+  // });
+  test("GET 404: Responds with endpoint error if url is incorrect", () => {
+    return request(app)
+      .get("/api/user")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.error).toBe("Endpoint not found");
+      });
+  });
+});
