@@ -52,3 +52,24 @@ exports.checkValidCommentID = (comment_id) => {
   }
   return Promise.resolve();
 };
+
+exports.checkValidTopic = (topic) => {
+  if (!isNaN(topic)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad Request",
+    });
+  }
+  const inputQuery = "SELECT * FROM articles WHERE topic = $1";
+  return db.query(inputQuery, [topic]).then(({ rows }) => {
+    if (rows.length === 0) {
+      console.log("in 404");
+      return Promise.reject({
+        status: 404,
+        msg: "Not Found",
+      });
+    } else {
+      return Promise.resolve();
+    }
+  });
+};

@@ -3,6 +3,7 @@ const {
   checkIfExists,
   checkArticleExists,
   checkValidDataType,
+  checkValidTopic,
 } = require("../util/checkIfExists");
 
 const db = require(`${__dirname}/../db/connection.js`);
@@ -22,7 +23,7 @@ exports.fetchArticleByID = (article_id) => {
     });
 };
 
-exports.fetchAllArticles = (sort_by = "created_at", order = "DESC") => {
+exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
   const validSortQuery = [
     "author",
     "title",
@@ -44,7 +45,8 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC") => {
       msg: "Not Found",
     });
   }
-  const inputQuery = `
+
+  let SQLbaseQuery = `
   SELECT
     a.author,
     a.title,
@@ -54,19 +56,30 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC") => {
     a.votes,
     a.article_img_url,
     COUNT(c.comment_id)::INT AS comment_count
-FROM
+  FROM
     articles a
-LEFT JOIN
+  LEFT JOIN
     comments c
-ON
-    a.article_id = c.article_id
-GROUP BY
-    a.article_id
-ORDER BY
-    a.${sort_by} ${formattedOrder};
-`;
-  return db.query(inputQuery).then((result) => {
-    return result.rows;
+  ON
+    a.article_id = c.article_id`;
+
+  const args = [];
+  let topicPromise = Promise.resolve();
+
+  if (topic) {
+    topicPromise = checkValidTopic(topic).then(() => {
+      SQLbaseQuery += " WHERE topic = $1";
+      args.push(topic);
+    });
+  }
+
+  return topicPromise.then(() => {
+    SQLbaseQuery += " GROUP BY a.article_id";
+    SQLbaseQuery += ` ORDER BY
+    a.${sort_by} ${formattedOrder}`;
+    return db.query(SQLbaseQuery, args).then((result) => {
+      return result.rows;
+    });
   });
 };
 
@@ -130,3 +143,28 @@ exports.updateVotes = (article_id, inc_votes) => {
       })
   );
 };
+
+// const inputQuery = `
+// SELECT
+//   a.author,
+//   a.title,
+//   a.article_id,
+//   a.topic,
+//   a.created_at,
+//   a.votes,
+//   a.article_img_url,
+//   COUNT(c.comment_id)::INT AS comment_count
+// FROM
+//   articles a
+// LEFT JOIN
+//   comments c
+// ON
+//   a.article_id = c.article_id
+// GROUP BY
+//   a.article_id
+// ORDER BY
+//   a.${sort_by} ${formattedOrder};
+// `;
+
+// console.log("this is input query ", inputQuery);
+// console.log("this is base sql query ", SQLbaseQuery);
