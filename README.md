@@ -1,5 +1,16 @@
 # Northcoders News API
 
+Welcome to Northcoders News API. 
+In the following, you will find:
+> A link to the hosted application
+> A summary of the project
+> Instruction on how to set up the project
+> Versions and dependencies
+
+# Hosted application
+
+The database is hosted on Superbase and the 
+
 # Set-up - Databases
 
 The project makes use of two databases; test and development.
