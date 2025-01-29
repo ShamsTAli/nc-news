@@ -63,7 +63,6 @@ exports.checkValidTopic = (topic) => {
   const inputQuery = "SELECT * FROM articles WHERE topic = $1";
   return db.query(inputQuery, [topic]).then(({ rows }) => {
     if (rows.length === 0) {
-      console.log("in 404");
       return Promise.reject({
         status: 404,
         msg: "Not Found",
