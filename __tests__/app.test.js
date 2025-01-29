@@ -5,6 +5,7 @@ const app = require("../app/app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data/index");
+const e = require("express");
 /* Set up your beforeEach & afterAll functions here */
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -103,7 +104,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         body.articles.forEach((element) => {
-          expect(element).toHaveProperty("comment_count");
+          expect(element).toHaveProperty("comment_count", expect.any(Number));
         });
       });
   });
@@ -380,6 +381,44 @@ describe("GET /api/users", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.error).toBe("Endpoint not found");
+      });
+  });
+});
+
+describe("GET /api/articles (sorting queries)", () => {
+  test("GET 200: Sorted by default settings for column (created_at) and order method (DESC)", () => {
+    return request(app)
+      .get("/api/articles?")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({
+          key: "created_at",
+          descending: true,
+        });
+      });
+  });
+  test("GET 200: Sorted by a selected column and default order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({ key: "votes", descending: true });
+      });
+  });
+  test("GET 200: Sorted by a selected column and ASC order method", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({ key: "votes" });
+      });
+  });
+  test("GET 404: Not found if sort criteria is invalid column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=sentiment")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
       });
   });
 });
