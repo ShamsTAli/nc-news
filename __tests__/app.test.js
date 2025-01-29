@@ -461,3 +461,28 @@ describe("GET /api/articles (topic query)", () => {
       });
   });
 });
+
+describe("GET /api/articles/:article_id (comment_count)", () => {
+  test("GET 200: Responds with article object which now includes comment-count property", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toHaveProperty("article_id", expect.any(Number));
+        expect(body.article).toHaveProperty("title", expect.any(String));
+        expect(body.article).toHaveProperty("topic", expect.any(String));
+        expect(body.article).toHaveProperty("author", expect.any(String));
+        expect(body.article).toHaveProperty("body", expect.any(String));
+        expect(body.article).toHaveProperty("created_at");
+        expect(body.article).toHaveProperty("votes", expect.any(Number));
+        expect(body.article).toHaveProperty(
+          "article_img_url",
+          expect.any(String)
+        );
+        expect(body.article).toHaveProperty(
+          "comment_count",
+          expect.any(Number)
+        );
+      });
+  });
+});

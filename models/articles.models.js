@@ -10,7 +10,28 @@ const db = require(`${__dirname}/../db/connection.js`);
 
 exports.fetchArticleByID = (article_id) => {
   return db
-    .query("SELECT * FROM articles WHERE article_id = $1", [article_id])
+    .query(
+      `
+  SELECT
+    a.author,
+    a.title,
+    a.article_id,
+    a.topic,
+    a.created_at,
+    a.votes,
+    a.article_img_url,
+    a.body,
+    COUNT(c.comment_id)::INT AS comment_count
+  FROM
+    articles a
+  LEFT JOIN
+    comments c
+  ON
+    a.article_id = c.article_id
+  WHERE a.article_id = $1
+  GROUP BY a.article_id`,
+      [article_id]
+    )
     .then((result) => {
       if (result.rows.length === 0) {
         return Promise.reject({
@@ -165,6 +186,3 @@ exports.updateVotes = (article_id, inc_votes) => {
 // ORDER BY
 //   a.${sort_by} ${formattedOrder};
 // `;
-
-// console.log("this is input query ", inputQuery);
-// console.log("this is base sql query ", SQLbaseQuery);
