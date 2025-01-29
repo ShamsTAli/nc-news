@@ -22,7 +22,28 @@ exports.fetchArticleByID = (article_id) => {
     });
 };
 
-exports.fetchAllArticles = () => {
+exports.fetchAllArticles = (sort_by = "created_at", order = "DESC") => {
+  const validSortQuery = [
+    "author",
+    "title",
+    "article_id",
+    "topic",
+    "created_at",
+    "votes",
+    "comment_count",
+  ];
+  const validOrderQuery = ["DESC", "ASC"];
+  const formattedOrder = order.toUpperCase();
+
+  if (
+    !validSortQuery.includes(sort_by) ||
+    !validOrderQuery.includes(formattedOrder)
+  ) {
+    return Promise.reject({
+      status: 404,
+      msg: "Not Found",
+    });
+  }
   const inputQuery = `
   SELECT
     a.author,
@@ -32,7 +53,7 @@ exports.fetchAllArticles = () => {
     a.created_at,
     a.votes,
     a.article_img_url,
-    COUNT(c.comment_id) AS comment_count
+    COUNT(c.comment_id)::INT AS comment_count
 FROM
     articles a
 LEFT JOIN
@@ -42,7 +63,7 @@ ON
 GROUP BY
     a.article_id
 ORDER BY
-    a.created_at DESC;
+    a.${sort_by} ${formattedOrder};
 `;
   return db.query(inputQuery).then((result) => {
     return result.rows;
@@ -88,22 +109,24 @@ exports.insertComment = (username, body, article_id) => {
 };
 
 exports.updateVotes = (article_id, inc_votes) => {
-  return checkArticleExists(article_id)
-    .then(() => {
-      return checkValidDataType(inc_votes);
-    })
-    .then(() => {
-      return db.query("UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *", [
-        inc_votes,
-        article_id,
-      ]);
-    })
-    // .then(() => {
-    //   return db.query("SELECT * FROM articles WHERE article_id = $1", [
-    //     article_id,
-    //   ]);
-    // })
-    .then(({ rows }) => {
-      return rows[0];
-    });
+  return (
+    checkArticleExists(article_id)
+      .then(() => {
+        return checkValidDataType(inc_votes);
+      })
+      .then(() => {
+        return db.query(
+          "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
+          [inc_votes, article_id]
+        );
+      })
+      // .then(() => {
+      //   return db.query("SELECT * FROM articles WHERE article_id = $1", [
+      //     article_id,
+      //   ]);
+      // })
+      .then(({ rows }) => {
+        return rows[0];
+      })
+  );
 };
