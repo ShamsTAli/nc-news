@@ -422,3 +422,42 @@ describe("GET /api/articles (sorting queries)", () => {
       });
   });
 });
+
+describe("GET /api/articles (topic query)", () => {
+  test("GET 200: Filters articles based on topic query", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element.topic).toBe("cats");
+        });
+      });
+  });
+  test("GET 200: Filters articles based on another topic query", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element.topic).toBe("mitch");
+        });
+      });
+  });
+  test("GET 404: If topic doesn't exist, returns no articles", () => {
+    return request(app)
+      .get("/api/articles?topic=aliens")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("GET 400: Bad request if provided with invalid datatype", () => {
+    return request(app)
+      .get("/api/articles?topic=122")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
