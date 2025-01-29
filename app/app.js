@@ -1,32 +1,22 @@
 const express = require("express");
-const { getEndpoints, getTopics } = require("../controllers/api.controller");
-const {
-  getArticleByID,
-  getArticles,
-  getArticleComments,
-  postArticleComment,
-  patchArticleVote,
-} = require("../controllers/articles.controller");
-const { deleteComment } = require("../controllers/comments.controller");
-const { getUsers } = require("../controllers/users.controller");
+const { getEndpoints } = require("../controllers/apitopics.controller");
+
+const apiRouter = require("express").Router();
+const articlesRouter = require("./articles-router");
+const usersRouter = require("./users-router");
+const topicsRouter = require("./topics-router");
+const commentsRouter = require("./comments-router");
 const app = express();
+
 app.use(express.json());
+app.use("/api", apiRouter);
+apiRouter.use("/articles", articlesRouter);
+apiRouter.use("/users", usersRouter);
+apiRouter.use("/topics", topicsRouter);
+apiRouter.use("/comments", commentsRouter);
 
-// Get Requests
 app.get("/api", getEndpoints);
-app.get("/api/topics", getTopics);
-app.get("/api/articles/:article_id", getArticleByID);
-app.get("/api/articles", getArticles); // includes queries (sortby, order, topic)
-app.get("/api/articles/:article_id/comments", getArticleComments);
-app.get("/api/users", getUsers)
 
-//Post & Patch & Delete Requests
-app.post("/api/articles/:article_id/comments", postArticleComment);
-app.patch("/api/articles/:article_id", patchArticleVote);
-app.delete("/api/comments/:comment_id", deleteComment)
-
-
-// Error Handling
 app.all("*", (request, response) => {
   response.status(404).send({ error: "Endpoint not found" });
 });
