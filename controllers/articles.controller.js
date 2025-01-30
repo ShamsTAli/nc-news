@@ -4,6 +4,7 @@ const {
   fetchArticleComments,
   insertComment,
   updateVotes,
+  insertArticle,
 } = require("../models/articles.models");
 
 exports.getArticleByID = (request, response, next) => {
@@ -18,7 +19,7 @@ exports.getArticleByID = (request, response, next) => {
 };
 
 exports.getArticles = (request, response, next) => {
-  const {sort_by, order, topic} = request.query
+  const { sort_by, order, topic } = request.query;
   fetchAllArticles(sort_by, order, topic)
     .then((articles) => {
       response.status(200).send({ articles });
@@ -41,7 +42,7 @@ exports.getArticleComments = (request, response, next) => {
 
 exports.postArticleComment = (request, response, next) => {
   const { username, body } = request.body;
-  const {article_id} = request.params
+  const { article_id } = request.params;
   insertComment(username, body, article_id)
     .then((comment) => {
       response.status(201).send({ msg: comment });
@@ -51,15 +52,25 @@ exports.postArticleComment = (request, response, next) => {
     });
 };
 
-exports.patchArticleVote = (request, response, next) =>{
-  const {article_id} = request.params
-  const {inc_votes} = request.body
+exports.patchArticleVote = (request, response, next) => {
+  const { article_id } = request.params;
+  const { inc_votes } = request.body;
   updateVotes(article_id, inc_votes)
-  .then((article)=>{
-    response.status(200).send({article})
-  })
-  .catch((err)=>{
-    next(err)
-  })
+    .then((article) => {
+      response.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
 
-}
+exports.postArticle = (request, response, next) => {
+  const { author, title, body, topic, article_img_url } = request.body;
+  insertArticle(author, title, body, topic, article_img_url)
+    .then((article) => {
+      response.status(201).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};

@@ -4,6 +4,8 @@ const {
   checkArticleExists,
   checkValidDataType,
   checkValidTopic,
+  insertTopic,
+  insertAuthor,
 } = require("../util/checkIfExists");
 
 const db = require(`${__dirname}/../db/connection.js`);
@@ -143,19 +145,45 @@ exports.insertComment = (username, body, article_id) => {
 };
 
 exports.updateVotes = (article_id, inc_votes) => {
-  return (
-    checkArticleExists(article_id)
-      .then(() => {
-        return checkValidDataType(inc_votes);
-      })
-      .then(() => {
-        return db.query(
-          "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
-          [inc_votes, article_id]
-        );
-      })
-      .then(({ rows }) => {
-        return rows[0];
-      })
-  );
+  return checkArticleExists(article_id)
+    .then(() => {
+      return checkValidDataType(inc_votes);
+    })
+    .then(() => {
+      return db.query(
+        "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
+        [inc_votes, article_id]
+      );
+    })
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.insertArticle = (
+  author,
+  title,
+  body,
+  topic,
+  article_img_url = "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
+) => {
+
+  if (!author || !title || !body || !topic) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad Request",
+    });
+  }
+  return insertTopic(topic).then(() => {
+    return insertAuthor(author).then(() => {
+      return db
+        .query(
+          "INSERT INTO articles (author, title, body, topic, article_img_url) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+          [author, title, body, topic, article_img_url]
+        )
+        .then(({ rows }) => {
+          return rows[0];
+        });
+    });
+  });
 };
