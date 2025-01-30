@@ -9,8 +9,7 @@ exports.fetchUsers = () => {
 };
 
 exports.fetchUsername = (username) => {
-  return checkValidUsername(username)
-  .then(() => {
+  return checkValidUsername(username).then(() => {
     return db
       .query("SELECT * FROM users WHERE username = $1", [username])
       .then((result) => {

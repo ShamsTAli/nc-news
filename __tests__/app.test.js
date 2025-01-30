@@ -517,3 +517,86 @@ describe("GET /api/users/:username", () => {
       });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("PATCH 200: Accepted patch request with positive number", () => {
+    const patchRequest = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(patchRequest)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 17,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("PATCH 200: Test if increments", () => {
+    const patchRequest = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(patchRequest)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment.votes).toBe(17);
+        return request(app)
+          .patch("/api/comments/1")
+          .send(patchRequest)
+          .expect(200);
+      })
+      .then(({ body }) => {
+        expect(body.comment.votes).toBe(18);
+      });
+  });
+  test("PATCH 200: Accepted patch request with negative number", () => {
+    const patchRequest = {
+      inc_votes: -1,
+    };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(patchRequest)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 15,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("PATCH 400: Bad request if invalid data", () => {
+    const patchRequest = {
+      inc_votes: "one",
+    };
+    return request(app)
+      .patch("/api/comments/1")
+      .send(patchRequest)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("PATCH 404: Comment Id not found", () => {
+    const patchRequest = {
+      inc_votes: 1,
+    };
+    return request(app)
+      .patch("/api/comments/50")
+      .send(patchRequest)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
