@@ -74,8 +74,6 @@ exports.checkValidTopic = (topic) => {
 };
 
 exports.checkValidUsername = (username) => {
-  console.log("in username check");
-
   if (!isNaN(username)) {
     return Promise.reject({
       status: 400,
