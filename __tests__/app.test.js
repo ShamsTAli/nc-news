@@ -486,3 +486,34 @@ describe("GET /api/articles/:article_id (comment_count)", () => {
       });
   });
 });
+
+describe("GET /api/users/:username", () => {
+  test("GET 200: Responds with a user object with correct properties", () => {
+    return request(app)
+      .get("/api/users/lurker")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.user).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+  });
+  test("GET 404: Not Found if username does not exist", () => {
+    return request(app)
+      .get("/api/users/shams")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("GET 400: Bad Request if username is invalid datatype", () => {
+    return request(app)
+      .get("/api/users/123")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});

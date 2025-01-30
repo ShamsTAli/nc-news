@@ -72,3 +72,13 @@ exports.checkValidTopic = (topic) => {
     }
   });
 };
+
+exports.checkValidUsername = (username) => {
+  if (!isNaN(username)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad Request",
+    });
+  }
+  return Promise.resolve();
+};
