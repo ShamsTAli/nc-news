@@ -600,3 +600,179 @@ describe("PATCH /api/comments/:comment_id", () => {
       });
   });
 });
+
+describe("POST /api/articles", () => {
+  test("POST:201 Successful post with existing author and existing topic", () => {
+    const postArticle = {
+      author: "rogersop",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "cats",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "rogersop",
+          title: "Mindful coding",
+          body: "Its important to take breaks with cats inbetween coding sessions...",
+          topic: "cats",
+          article_img_url: "https://images.pexels.com/photos/15",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("POST:201 Successful post if new topic, existing author", () => {
+    const postArticle = {
+      author: "rogersop",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "coding",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "rogersop",
+          title: "Mindful coding",
+          body: "Its important to take breaks with cats inbetween coding sessions...",
+          topic: "coding",
+          article_img_url: "https://images.pexels.com/photos/15",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("POST:201 Successful post if new author, existing topic", () => {
+    const postArticle = {
+      author: "shams",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "cats",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "shams",
+          title: "Mindful coding",
+          body: "Its important to take breaks with cats inbetween coding sessions...",
+          topic: "cats",
+          article_img_url: "https://images.pexels.com/photos/15",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("POST:201 Successful post if new author and new topic", () => {
+    const postArticle = {
+      author: "shams",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "coding",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "shams",
+          title: "Mindful coding",
+          body: "Its important to take breaks with cats inbetween coding sessions...",
+          topic: "coding",
+          article_img_url: "https://images.pexels.com/photos/15",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("POST:201 Resolves to use default input for article img url if none provided", () => {
+    const postArticle = {
+      author: "rogersop",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "cats",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "rogersop",
+          title: "Mindful coding",
+          body: "Its important to take breaks with cats inbetween coding sessions...",
+          topic: "cats",
+          article_img_url:
+            "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("POST:400 Bad request author includes incorrect datatype", () => {
+    const postArticle = {
+      author: 123,
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: "cats",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("POST:400 Bad request topic includes incorrect datatype", () => {
+    const postArticle = {
+      author: "rogersop",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      topic: 123,
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("POST:400 Bad request if incorrect keys", () => {
+    const postArticle = {
+      author: "rogersop",
+      title: "Mindful coding",
+      body: "Its important to take breaks with cats inbetween coding sessions...",
+      votes: "cats",
+      article_img_url: "https://images.pexels.com/photos/15",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(postArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});

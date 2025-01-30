@@ -82,3 +82,35 @@ exports.checkValidUsername = (username) => {
   }
   return Promise.resolve();
 };
+
+exports.insertTopic = (topic) => {
+  return db
+    .query("SELECT * FROM topics WHERE slug = $1", [topic])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        if (!isNaN(topic)) {
+          return Promise.reject({
+            status: 400,
+            msg: "Bad Request",
+          });
+        } else {
+          return db.query("INSERT INTO topics (slug) VALUES ($1)", [topic]);
+        }
+      }
+    });
+};
+
+exports.insertAuthor = (author) => {
+  return db
+    .query("SELECT * FROM users WHERE username = $1", [author])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return this.checkValidUsername(author).then(() => {
+          return db.query(
+            "INSERT INTO users (username, name) VALUES ($1, $2)",
+            [author, author]
+          );
+        });
+      }
+    });
+};
