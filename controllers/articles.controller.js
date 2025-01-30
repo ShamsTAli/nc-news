@@ -71,7 +71,6 @@ exports.postArticle = (request, response, next) => {
       response.status(201).send({ article });
     })
     .catch((err) => {
-      console.log(err);
       next(err);
     });
 };
