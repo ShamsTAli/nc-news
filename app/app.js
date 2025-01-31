@@ -28,7 +28,15 @@ app.use((err, request, response, next) => {
   }
 });
 app.use((err, request, response, next) => {
-  if (err.msg && err.status) {
+  if (err.status === 409) {
+    response.status(409).send({ error: err.msg });
+  } else {
+    next(err);
+  }
+});
+
+app.use((err, request, response, next) => {
+  if (err.status === 404) {
     response.status(404).send({ msg: "Not Found" });
   } else {
     next(err);
