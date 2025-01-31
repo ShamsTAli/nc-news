@@ -859,3 +859,57 @@ describe("GET /api/articles/:article_id/comments (pagination)", () => {
       });
   });
 });
+
+describe("POST /api/topics", () => {
+  test("POST:201 Responds with post object on successful post request", () => {
+    const postTopic = {
+      slug: "football",
+      description: "Read all about soccer!",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(postTopic)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).toMatchObject(postTopic);
+      });
+  });
+  test("POST:400 Bad request if post includes incorrect data types", () => {
+    const postTopic = {
+      slug: 123,
+      description: "Read all about soccer!",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(postTopic)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("POST:400 Bad request if topic is missing properties", () => {
+    const postTopic = {
+      slug: "football",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(postTopic)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("POST:409 Conflict if topic already exists", () => {
+    const postTopic = {
+      slug: "mitch",
+      description: "Read all about soccer!",
+    };
+    return request(app)
+      .post("/api/topics")
+      .send(postTopic)
+      .expect(409)
+      .then(({ body }) => {
+        expect(body.error).toBe("Conflict: Topic already exists");
+      });
+  });
+});
