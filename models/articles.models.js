@@ -131,32 +131,45 @@ exports.fetchAllArticles = (
       }
       return {
         articles: rows,
-        // total_count: rows[0]?.total_count || 0,
+        total_count: rows[0]?.total_count || 0,
       };
     });
   });
 };
 
-exports.fetchArticleComments = (article_id) => {
+exports.fetchArticleComments = (article_id, limit = 10, p = 1) => {
   return checkArticleHasComments(article_id).then(() => {
+    const formatP = Number(p);
+    const formatLimit = Number(limit);
+    if (formatLimit < 1 || formatP < 1) {
+      return Promise.reject({
+        status: 400,
+        msg: "Bad Request",
+      });
+    }
+    const offset = (formatP - 1) * formatLimit;
     const inputQuery = `
-       SELECT
+    SELECT
       c.article_id,
       c.votes,
       c.created_at,
       c.author,
       c.body,
-      c.comment_id
+      c.comment_id,
+      COUNT(*) OVER() AS total_count
     FROM
       comments c
     WHERE
       c.article_id = $1
     ORDER BY
       c.created_at DESC
+    LIMIT $2 OFFSET $3
     `;
-    return db.query(inputQuery, [article_id]).then(({ rows }) => {
-      return rows;
-    });
+    return db
+      .query(inputQuery, [article_id, formatLimit, offset])
+      .then(({ rows }) => {
+        return rows;
+      });
   });
 };
 

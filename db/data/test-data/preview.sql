@@ -43,7 +43,7 @@ SELECT
     a.created_at,
     a.votes,
     a.article_img_url,
-    COUNT(c.comment_id) AS comment_count,
+    COUNT(c.comment_id)::INT AS comment_count,
     COUNT (*) OVER()::INT AS total_count
 FROM
     articles a
