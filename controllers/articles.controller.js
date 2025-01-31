@@ -21,8 +21,8 @@ exports.getArticleByID = (request, response, next) => {
 exports.getArticles = (request, response, next) => {
   const { sort_by, order, topic, limit, p } = request.query;
   fetchAllArticles(sort_by, order, topic, limit, p)
-    .then(({ articles }) => {
-      response.status(200).send({ articles });
+    .then(({ articles, total_count }) => {
+      response.status(200).send({ articles, total_count });
     })
     .catch((err) => {
       // console.log(err)
@@ -32,7 +32,8 @@ exports.getArticles = (request, response, next) => {
 
 exports.getArticleComments = (request, response, next) => {
   const { article_id } = request.params;
-  fetchArticleComments(article_id)
+  const { limit, p } = request.query;
+  fetchArticleComments(article_id, limit, p)
     .then((article) => {
       response.status(200).send({ article });
     })

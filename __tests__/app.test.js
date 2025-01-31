@@ -682,6 +682,14 @@ describe("GET /api/articles (pagination)", () => {
         expect(body.articles.length).toBe(5);
       });
   });
+  test("GET 200: Includes total count property", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveProperty("total_count");
+      });
+  });
   test("GET 400: Bad request if invalid queries", () => {
     return request(app)
       .get("/api/articles?limit=-5&p=1")
@@ -802,6 +810,49 @@ describe("GET /api/articles (sorting queries)", () => {
   test("GET 404: Not found if sort criteria is invalid column", () => {
     return request(app)
       .get("/api/articles?sort_by=sentiment")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments (pagination)", () => {
+  test("GET 200: Default pagination settings", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.length).toBe(10);
+      });
+  });
+  test("GET 200: Custom pagination settings", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.length).toBe(5);
+      });
+  });
+  test("GET 200: Pagination, page two test", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5&p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article.length).toBe(5);
+      });
+  });
+  test("GET 400: Bad request if invalid queries", () => {
+    return request(app)
+      .get("/api/articles?limit=-5&p=1")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("GET 404: Not found if page number does not exist", () => {
+    return request(app)
+      .get("/api/articles?limit=10&p=100")
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not Found");
