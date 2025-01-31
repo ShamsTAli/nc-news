@@ -1,21 +1,19 @@
 \c nc_news_test;
 
 
-    SELECT
-      c.article_id,
-      c.votes,
-      c.created_at,
-      c.author,
-      c.body,
-      c.comment_id
-    FROM
-      comments c
-    WHERE
-      c.article_id = 1
-    ORDER BY
-      c.created_at
-
-
+    -- SELECT
+    --   c.article_id,
+    --   c.votes,
+    --   c.created_at,
+    --   c.author,
+    --   c.body,
+    --   c.comment_id
+    -- FROM
+    --   comments c
+    -- WHERE
+    --   c.article_id = 1
+    -- ORDER BY
+    --   c.created_at
 
 
 -- SELECT 
@@ -37,22 +35,27 @@
 
 
 
---   SELECT
---     a.author,
---     a.title,
---     a.article_id,
---     a.topic,
---     a.created_at,
---     a.votes,
---     a.article_img_url,
---     COUNT(c.comment_id) AS comment_count
--- FROM
---     articles a
--- LEFT JOIN
---     comments c
--- ON
---     a.article_id = c.article_id
--- GROUP BY
---     a.article_id
--- ORDER BY
---     a.created_at DESC;
+SELECT
+    a.author,
+    a.title,
+    a.article_id,
+    a.topic,
+    a.created_at,
+    a.votes,
+    a.article_img_url,
+    COUNT(c.comment_id) AS comment_count,
+    COUNT (*) OVER()::INT AS total_count
+FROM
+    articles a
+LEFT JOIN
+    comments c
+ON
+    a.article_id = c.article_id
+WHERE 
+    topic = 'mitch'
+GROUP BY
+    a.article_id
+ORDER BY
+    a.created_at DESC
+LIMIT 10 
+OFFSET 0;

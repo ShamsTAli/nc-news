@@ -46,7 +46,13 @@ exports.fetchArticleByID = (article_id) => {
     });
 };
 
-exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
+exports.fetchAllArticles = (
+  sort_by = "created_at",
+  order = "DESC",
+  topic,
+  limit = 10,
+  p = 1
+) => {
   const validSortQuery = [
     "author",
     "title",
@@ -58,6 +64,8 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
   ];
   const validOrderQuery = ["DESC", "ASC"];
   const formattedOrder = order.toUpperCase();
+  const formatP = Number(p);
+  const formatLimit = Number(limit);
 
   if (
     !validSortQuery.includes(sort_by) ||
@@ -69,6 +77,15 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
     });
   }
 
+  if (formatLimit < 1 || formatP < 1) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad Request",
+    });
+  }
+
+  const offset = (p - 1) * limit; // page 1 means we start from 0, page 2 means we start from 10
+
   let SQLbaseQuery = `
   SELECT
     a.author,
@@ -78,7 +95,8 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
     a.created_at,
     a.votes,
     a.article_img_url,
-    COUNT(c.comment_id)::INT AS comment_count
+    COUNT(c.comment_id)::INT AS comment_count,
+    COUNT (*) OVER()::INT AS total_count
   FROM
     articles a
   LEFT JOIN
@@ -100,8 +118,21 @@ exports.fetchAllArticles = (sort_by = "created_at", order = "DESC", topic) => {
     SQLbaseQuery += " GROUP BY a.article_id";
     SQLbaseQuery += ` ORDER BY
     a.${sort_by} ${formattedOrder}`;
-    return db.query(SQLbaseQuery, args).then((result) => {
-      return result.rows;
+    SQLbaseQuery += ` LIMIT $${args.length + 1} OFFSET $${args.length + 2}`;
+
+    args.push(limit, offset);
+
+    return db.query(SQLbaseQuery, args).then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Not Found",
+        });
+      }
+      return {
+        articles: rows,
+        // total_count: rows[0]?.total_count || 0,
+      };
     });
   });
 };
@@ -167,7 +198,6 @@ exports.insertArticle = (
   topic,
   article_img_url = "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
 ) => {
-
   if (!author || !title || !body || !topic) {
     return Promise.reject({
       status: 400,
