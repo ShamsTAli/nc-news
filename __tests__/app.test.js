@@ -913,3 +913,36 @@ describe("POST /api/topics", () => {
       });
   });
 });
+
+describe("DELETE /api/articles/:article_id", () => {
+  test("DELETE 204: Deletes article based on id and all comments", () => {
+    return request(app)
+      .delete("/api/articles/1")
+      .expect(204)
+      .then(() => {
+        return Promise.all([
+          db.query("SELECT * FROM articles WHERE article_id = 1"),
+          db.query("SELECT * FROM comments WHERE article_id = 1"),
+        ]).then(([articleResult, commentResult]) => {
+          expect(articleResult.rows.length).toBe(0);
+          expect(commentResult.rows.length).toBe(0);
+        });
+      });
+  });
+  test("DELETE 404: Article not found if non-existent article_id", () => {
+    return request(app)
+      .delete("/api/articles/100")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("DELETE 400: Bad request if invalid data", () => {
+    return request(app)
+      .delete("/api/articles/thirtythree")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
