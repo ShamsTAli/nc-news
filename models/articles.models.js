@@ -230,3 +230,28 @@ exports.insertArticle = (
     });
   });
 };
+
+exports.deleteArticleByID = async (article_id) => {
+  try {
+    await db.query("BEGIN;");
+    await db.query("DELETE FROM comments WHERE article_id = $1 RETURNING *;", [
+      article_id,
+    ]);
+    const result = await db.query(
+      "DELETE FROM articles WHERE article_id = $1 RETURNING *;",
+      [article_id]
+    );
+    if (result.rows.length === 0) {
+      await db.query("ROLLBACK");
+      return Promise.reject({
+        status: 404,
+        msg: "Not Found",
+      });
+    }
+    await db.query("COMMIT;");
+    return Promise.resolve(result);
+  } catch (error) {
+    await db.query("ROLLBACK");
+    throw error;
+  }
+};
