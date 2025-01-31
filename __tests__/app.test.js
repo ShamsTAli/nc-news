@@ -89,38 +89,6 @@ describe("GET /api/articles/:article_id", () => {
   });
 });
 
-describe("GET /api/articles", () => {
-  test("GET 200: Responds with all articles", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articles.length).toBe(13);
-      });
-  });
-  test("GET 200: Responds with comment count as an additional property", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        body.articles.forEach((element) => {
-          expect(element).toHaveProperty("comment_count", expect.any(Number));
-        });
-      });
-  });
-  test("GET 200: Responds with articles in descending order", () => {
-    return request(app)
-      .get("/api/articles")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articles).toBeSortedBy("created_at", {
-          descending: "true",
-          coerce: true,
-        });
-      });
-  });
-});
-
 describe("GET /api/articles/:article_id/comments", () => {
   test("GET 200: Responds with expected properties in single comment object", () => {
     return request(app)
@@ -364,100 +332,12 @@ describe("GET /api/users", () => {
         });
       });
   });
-  // Tried to simulate an empty database but couldn't get it to work
-  // test("GET 200: Responds with empty array if the request is successful however there are no users", () => {
-  //   return db.query("DELETE FROM users").then(() => {
-  //     return request(app)
-  //       .get("/api/users")
-  //       .expect(200)
-  //       .then(({ body }) => {
-  //         expect(body.users).toEqual([]);
-  //       });
-  //   });
-  // });
   test("GET 404: Responds with endpoint error if url is incorrect", () => {
     return request(app)
       .get("/api/user")
       .expect(404)
       .then(({ body }) => {
         expect(body.error).toBe("Endpoint not found");
-      });
-  });
-});
-
-describe("GET /api/articles (sorting queries)", () => {
-  test("GET 200: Sorted by default settings for column (created_at) and order method (DESC)", () => {
-    return request(app)
-      .get("/api/articles?")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articles).toBeSorted({
-          key: "created_at",
-          descending: true,
-        });
-      });
-  });
-  test("GET 200: Sorted by a selected column and default order", () => {
-    return request(app)
-      .get("/api/articles?sort_by=votes")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articles).toBeSorted({ key: "votes", descending: true });
-      });
-  });
-  test("GET 200: Sorted by a selected column and ASC order method", () => {
-    return request(app)
-      .get("/api/articles?sort_by=votes&order=asc")
-      .expect(200)
-      .then(({ body }) => {
-        expect(body.articles).toBeSorted({ key: "votes" });
-      });
-  });
-  test("GET 404: Not found if sort criteria is invalid column", () => {
-    return request(app)
-      .get("/api/articles?sort_by=sentiment")
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Not Found");
-      });
-  });
-});
-
-describe("GET /api/articles (topic query)", () => {
-  test("GET 200: Filters articles based on topic query", () => {
-    return request(app)
-      .get("/api/articles?topic=cats")
-      .expect(200)
-      .then(({ body }) => {
-        body.articles.forEach((element) => {
-          expect(element.topic).toBe("cats");
-        });
-      });
-  });
-  test("GET 200: Filters articles based on another topic query", () => {
-    return request(app)
-      .get("/api/articles?topic=mitch")
-      .expect(200)
-      .then(({ body }) => {
-        body.articles.forEach((element) => {
-          expect(element.topic).toBe("mitch");
-        });
-      });
-  });
-  test("GET 404: If topic doesn't exist, returns no articles", () => {
-    return request(app)
-      .get("/api/articles?topic=aliens")
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Not Found");
-      });
-  });
-  test("GET 400: Bad request if provided with invalid datatype", () => {
-    return request(app)
-      .get("/api/articles?topic=122")
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
       });
   });
 });
@@ -773,6 +653,158 @@ describe("POST /api/articles", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("GET /api/articles (pagination)", () => {
+  test("GET 200: Default pagination settings", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(10);
+      });
+  });
+  test("GET 200: Custom pagination settings", () => {
+    return request(app)
+      .get("/api/articles?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(5);
+      });
+  });
+  test("GET 200: Pagination, page two test", () => {
+    return request(app)
+      .get("/api/articles?limit=5&p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(5);
+      });
+  });
+  test("GET 400: Bad request if invalid queries", () => {
+    return request(app)
+      .get("/api/articles?limit=-5&p=1")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("GET 404: Not found if page number does not exist", () => {
+    return request(app)
+      .get("/api/articles?limit=10&p=100")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("GET 200: Responds with all articles", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length).toBe(10); // changed after page
+      });
+  });
+  test("GET 200: Responds with comment count as an additional property", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element).toHaveProperty("comment_count", expect.any(Number));
+        });
+      });
+  });
+  test("GET 200: Responds with articles in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", {
+          descending: "true",
+          coerce: true,
+        });
+      });
+  });
+});
+
+describe("GET /api/articles (topic query)", () => {
+  test("GET 200: Filters articles based on topic query", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element.topic).toBe("cats");
+        });
+      });
+  });
+  test("GET 200: Filters articles based on another topic query", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        body.articles.forEach((element) => {
+          expect(element.topic).toBe("mitch");
+        });
+      });
+  });
+  test("GET 404: If topic doesn't exist, returns no articles", () => {
+    return request(app)
+      .get("/api/articles?topic=aliens")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+  test("GET 400: Bad request if provided with invalid datatype", () => {
+    return request(app)
+      .get("/api/articles?topic=122")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("GET /api/articles (sorting queries)", () => {
+  test("GET 200: Sorted by default settings for column (created_at) and order method (DESC)", () => {
+    return request(app)
+      .get("/api/articles?")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({
+          key: "created_at",
+          descending: true,
+        });
+      });
+  });
+  test("GET 200: Sorted by a selected column and default order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({ key: "votes", descending: true });
+      });
+  });
+  test("GET 200: Sorted by a selected column and ASC order method", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSorted({ key: "votes" });
+      });
+  });
+  test("GET 404: Not found if sort criteria is invalid column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=sentiment")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
       });
   });
 });
