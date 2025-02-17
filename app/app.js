@@ -7,8 +7,11 @@ const usersRouter = require("./users-router");
 const topicsRouter = require("./topics-router");
 const commentsRouter = require("./comments-router");
 const app = express();
+const cors = require("cors");
 
 app.use(express.json());
+app.use(cors());
+
 app.use("/api", apiRouter);
 apiRouter.use("/articles", articlesRouter);
 apiRouter.use("/users", usersRouter);
